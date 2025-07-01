@@ -1,4 +1,5 @@
 import express from "express";
+import Joi from "joi";
 
 const app = express();
 app.use(express.json());
@@ -23,6 +24,14 @@ const books = [
   },
 ];
 
+const schema = Joi.object({
+  title: Joi.string().trim().min(3).required(),
+  author: Joi.string().trim().min(3).required(),
+  description: Joi.string().trim().min(3).required(),
+  price: Joi.number().min(0).required(),
+  cover: Joi.string().trim().min(3).required(),
+});
+
 app.get("/api/books", (req, res) => {
   res.status(200).json(books);
 });
@@ -39,6 +48,16 @@ app.get("/api/books/:id", (req, res) => {
 });
 
 app.post("/api/books", (req, res) => {
+  const { error } = schema.validate(req.body, { abortEarly: false });
+  if (error) {
+    return res.status(400).json({
+      status: 400,
+      errors: error.details.map((detail) => ({
+        field: detail.path.join("."),
+        message: detail.message,
+      })),
+    });
+  }
   const book = {
     id: books.length + 1,
     title: req.body.title,
