@@ -30,11 +30,20 @@ const schema = Joi.object({
   price: Joi.number().min(0).required(),
   cover: Joi.string().trim().min(3).required(),
 });
-
+/**
+ * @route   GET /api/books
+ * @desc    Get all books
+ * @access  Public
+ */
 router.get("/", (req, res) => {
   res.status(200).json(books);
 });
 
+/**
+ * @route   GET /api/books/id
+ * @desc    Get book by id
+ * @access  Public
+ */
 router.get("/:id", (req, res) => {
   const book = books.find((b) => b.id === parseInt(req.params.id));
   if (book) {
@@ -45,6 +54,12 @@ router.get("/:id", (req, res) => {
     });
   }
 });
+
+/**
+ * @route   POST /api/books/
+ * @desc    Create a new book
+ * @access  Public
+ */
 router.post("/", (req, res) => {
   const isValid = schemaValidation(req.body, res);
   if (!isValid) return;
