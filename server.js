@@ -1,6 +1,7 @@
 import express from "express";
 
 const app = express();
+app.use(express.json());
 const PORT = 5000;
 const books = [
   {
@@ -37,6 +38,20 @@ app.get("/api/books/:id", (req, res) => {
   }
 });
 
+app.post("/api/books", (req, res) => {
+  const book = {
+    id: books.length + 1,
+    title: req.body.title,
+    author: req.body.author,
+    description: req.body.description,
+    price: req.body.price,
+    cover: req.body.cover,
+  };
+
+  res.status(201).json(book);
+  books.push(book);
+});
+
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
