@@ -2,19 +2,23 @@ import express from "express";
 
 const app = express();
 const PORT = 5000;
-
 const books = [
   {
     id: 1,
     title: "The Alchemist",
     author: "Paulo Coelho",
-    year: 1988,
+    description: "A journey of a shepherd boy to find his destiny.",
+    price: 10.99,
+    cover: "https://example.com/alchemist.jpg",
   },
   {
     id: 2,
     title: "Atomic Habits",
     author: "James Clear",
-    year: 2018,
+    description:
+      "An easy & proven way to build good habits and break bad ones.",
+    price: 14.99,
+    cover: "https://example.com/atomic-habits.jpg",
   },
 ];
 
