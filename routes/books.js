@@ -3,6 +3,36 @@ import Joi from "joi";
 
 const router = express.Router();
 
+const createBookSchema = Joi.object({
+  title: Joi.string().trim().min(3).required(),
+  author: Joi.string().trim().min(3).required(),
+  description: Joi.string().trim().min(3).required(),
+  price: Joi.number().min(0).required(),
+  cover: Joi.string().trim().min(3).required(),
+});
+const updateBookSchema = Joi.object({
+  title: Joi.string().trim().min(3),
+  author: Joi.string().trim().min(3),
+  description: Joi.string().trim().min(3),
+  price: Joi.number().min(0),
+  cover: Joi.string().trim().min(3),
+});
+
+function validateBook(obj, res, schema) {
+  const { error } = schema.validate(obj, { abortEarly: false });
+  if (error) {
+    res.status(400).json({
+      status: 400,
+      errors: error.details.map((detail) => ({
+        field: detail.path.join("."),
+        message: detail.message,
+      })),
+    });
+    return false;
+  }
+  return true;
+}
+
 const books = [
   {
     id: 1,
@@ -23,13 +53,6 @@ const books = [
   },
 ];
 
-const schema = Joi.object({
-  title: Joi.string().trim().min(3).required(),
-  author: Joi.string().trim().min(3).required(),
-  description: Joi.string().trim().min(3).required(),
-  price: Joi.number().min(0).required(),
-  cover: Joi.string().trim().min(3).required(),
-});
 /**
  * @route   GET /api/books
  * @desc    Get all books
@@ -61,7 +84,7 @@ router.get("/:id", (req, res) => {
  * @access  Public
  */
 router.post("/", (req, res) => {
-  const isValid = schemaValidation(req.body, res);
+  const isValid = validateBook(req.body, res, createBookSchema);
   if (!isValid) return;
 
   const book = {
@@ -77,19 +100,37 @@ router.post("/", (req, res) => {
   res.status(201).json(book);
 });
 
-function schemaValidation(obj, res) {
-  const { error } = schema.validate(obj, { abortEarly: false });
-  if (error) {
-    res.status(400).json({
-      status: 400,
-      errors: error.details.map((detail) => ({
-        field: detail.path.join("."),
-        message: detail.message,
-      })),
-    });
-    return false;
+/**
+ * @route   PUT /api/books/:id
+ * @desc    Update a new book
+ * @access  Public
+ */
+router.put("/:id", (req, res) => {
+  const isValid = validateBook(req.body, res, updateBookSchema);
+  if (!isValid) return;
+
+  const book = books.find((b) => b.id === req.body.id);
+
+  if (book) {
+    res.status(200).json({ message: "Book has been updated" });
+  } else {
+    res.status(400).json({ message: "Book is not found" });
   }
-  return true;
-}
+});
+
+/**
+ * @route   Delete /api/books/:id
+ * @desc    Delete a book
+ * @access  Public
+ */
+router.delete("/:id", (req, res) => {
+  const book = books.find((b) => b.id === req.body.id);
+
+  if (book) {
+    res.status(200).json({ message: "Book has been updated" });
+  } else {
+    res.status(400).json({ message: "Book is not found" });
+  }
+});
 
 export default router;
