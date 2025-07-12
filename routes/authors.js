@@ -36,8 +36,15 @@ function validateAuthor(obj, res, schema) {
 @desc    Get all authors
 @access  Public
 */
-router.get("/", (req, res) => {
-  res.status(200).json(authors);
+router.get("/", async (req, res) => {
+  try {
+    const authors = await Author.find();
+    res.status(200).json(authors);
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 });
 
 /**
@@ -45,13 +52,19 @@ router.get("/", (req, res) => {
 @desc    Get author by id
 @access  Public
 */
-router.get("/:id", (req, res) => {
-  const author = authors.find((b) => b.id === parseInt(req.params.id));
-  if (author) {
-    res.status(200).json(author);
-  } else {
-    res.status(404).json({
-      message: "Author not found",
+router.get("/:id", async (req, res) => {
+  try {
+    const author = await Author.findById(req.params.id);
+    if (author) {
+      res.status(200).json(author);
+    } else {
+      res.status(404).json({
+        message: "Author not found",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal Server Error",
     });
   }
 });
