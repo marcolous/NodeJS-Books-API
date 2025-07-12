@@ -94,16 +94,33 @@ router.post("/", async (req, res) => {
 @desc    Update a new author
 @access  Public
 */
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
   const isValid = validateAuthor(req.body, res, updateAuthorSchema);
   if (!isValid) return;
-
-  const author = authors.find((b) => b.id === req.body.id);
-
-  if (author) {
-    res.status(200).json({ message: "Author has been updated" });
-  } else {
-    res.status(400).json({ message: "Author is not found" });
+  try {
+    const updatedAuthor = await Author.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+          nationality: req.body.nationality,
+          photo: req.body.photo,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+    if (updatedAuthor) {
+      res.status(200).json({ message: "Author has been updated" });
+    } else {
+      res.status(400).json({ message: "Author is not found" });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
   }
 });
 
