@@ -1,20 +1,9 @@
 import express from "express";
-import Joi from "joi";
-import Author from "../models/Authors.js";
+import Author, {
+  createAuthorSchema,
+  updateAuthorSchema,
+} from "../models/Authors.js";
 const router = express.Router();
-
-const createAuthorSchema = Joi.object({
-  firstName: Joi.string().trim().min(3).required(),
-  lastName: Joi.string().trim().min(3).required(),
-  nationality: Joi.string().trim().min(3).required(),
-  photo: Joi.string().trim().min(3).required(),
-});
-const updateAuthorSchema = Joi.object({
-  firstName: Joi.string().trim().min(3),
-  lastName: Joi.string().trim().min(3),
-  nationality: Joi.string().trim().min(3),
-  photo: Joi.string().trim().min(3),
-});
 
 function validateAuthor(obj, res, schema) {
   const { error } = schema.validate(obj, { abortEarly: false });
@@ -31,6 +20,12 @@ function validateAuthor(obj, res, schema) {
   return true;
 }
 
+function catchMethodError(res) {
+  return res.status(500).json({
+    message: "Internal Server Error",
+  });
+}
+
 /**
 @route   GET /api/authors
 @desc    Get all authors
@@ -41,9 +36,7 @@ router.get("/", async (req, res) => {
     const authors = await Author.find();
     res.status(200).json(authors);
   } catch (error) {
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    catchMethodError(res);
   }
 });
 
@@ -63,9 +56,7 @@ router.get("/:id", async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    catchMethodError(res);
   }
 });
 
@@ -118,9 +109,7 @@ router.put("/:id", async (req, res) => {
       res.status(400).json({ message: "Author is not found" });
     }
   } catch (error) {
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    catchMethodError(res);
   }
 });
 
@@ -129,13 +118,16 @@ router.put("/:id", async (req, res) => {
 @desc    Delete a author
 @access  Public
 */
-router.delete("/:id", (req, res) => {
-  const author = authors.find((b) => b.id === req.body.id);
-
-  if (author) {
-    res.status(200).json({ message: "Author has been updated" });
-  } else {
-    res.status(400).json({ message: "Author is not found" });
+router.delete("/:id", async (req, res) => {
+  try {
+    const author = await Author.findByIdAndDelete(req.params.id);
+    if (author) {
+      res.status(200).json({ message: "Author has been updated" });
+    } else {
+      res.status(400).json({ message: "Author is not found" });
+    }
+  } catch (error) {
+    catchMethodError(res);
   }
 });
 
